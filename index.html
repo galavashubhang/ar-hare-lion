@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="AR Storybook: The Cunning Hare and The Lion — an interactive augmented reality folk tale.">
+  <title>The Cunning Hare & The Lion | AR Storybook</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+
+  <!-- A-Frame 1.4.0 -->
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <!-- AR.js for A-Frame (Hiro marker-based AR) -->
+  <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.5/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{overflow:hidden;background:#000;font-family:'Lato',sans-serif;-webkit-font-smoothing:antialiased}
+    canvas.a-canvas{position:fixed!important;top:0!important;left:0!important;width:100%!important;height:100%!important}
+
+    /* ── Transition flash ── */
+    #transition{position:fixed;inset:0;background:rgba(15,8,0,0);z-index:500;pointer-events:none;transition:background .35s ease}
+    #transition.on{background:rgba(15,8,0,.82)}
+
+    /* ── Marker prompt ── */
+    #marker-prompt{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:200;pointer-events:none;background:rgba(0,0,0,.25);transition:opacity .5s ease}
+    #marker-prompt.gone{opacity:0}
+    .p-icon{font-size:60px;animation:float 2.5s ease-in-out infinite;filter:drop-shadow(0 0 18px rgba(255,215,0,.5))}
+    .p-text{font-family:'Cinzel',serif;font-size:14px;color:rgba(255,240,200,.9);letter-spacing:2px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);padding:10px 24px;border-radius:50px;border:1px solid rgba(255,215,0,.3)}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+    /* ── Main UI overlay ── */
+    #ui{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:16px;padding-top:max(env(safe-area-inset-top),16px);padding-bottom:max(env(safe-area-inset-bottom),16px);z-index:300;pointer-events:none}
+
+    /* Header */
+    #header{display:flex;flex-direction:column;align-items:center;gap:10px}
+    #title-pill{font-family:'Cinzel',serif;font-size:clamp(11px,2.8vw,15px);color:#FFD700;text-shadow:0 0 18px rgba(255,215,0,.6);background:rgba(0,0,0,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:8px 20px;border-radius:50px;border:1px solid rgba(255,215,0,.3);letter-spacing:1.5px;white-space:nowrap}
+    #dots{display:flex;gap:10px;align-items:center}
+    .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);transition:all .4s cubic-bezier(.34,1.56,.64,1)}
+    .dot.done{background:rgba(255,215,0,.4);border-color:rgba(255,215,0,.5)}
+    .dot.active{width:22px;border-radius:4px;background:#FFD700;border-color:#FFD700;box-shadow:0 0 12px rgba(255,215,0,.7)}
+
+    /* Story panel */
+    #panel{background:rgba(8,5,2,.8);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,215,0,.2);border-radius:24px;padding:clamp(16px,4vw,26px);pointer-events:all;cursor:pointer;user-select:none;-webkit-user-select:none;transition:border-color .3s,box-shadow .3s;box-shadow:0 8px 32px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.04)}
+    #panel:active{border-color:rgba(255,215,0,.5);box-shadow:0 4px 16px rgba(0,0,0,.6),0 0 28px rgba(255,165,0,.18)}
+    .s-badge{font-size:10px;letter-spacing:3px;color:rgba(255,215,0,.6);font-family:'Cinzel',serif;text-transform:uppercase;margin-bottom:6px}
+    .s-title{font-family:'Cinzel',serif;font-size:clamp(16px,4.5vw,22px);color:#FFD700;line-height:1.25;margin-bottom:10px;text-shadow:0 0 28px rgba(255,215,0,.25)}
+    .s-body{font-size:clamp(13px,2.8vw,15px);color:rgba(255,240,210,.88);line-height:1.75;font-weight:300}
+    .tap-cue{display:flex;align-items:center;gap:8px;margin-top:14px;color:rgba(255,215,0,.55);font-size:11px;letter-spacing:2.5px;text-transform:uppercase}
+    .tap-dot{width:6px;height:6px;border-radius:50%;background:#FFD700;animation:blink 1.8s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    .anim-in{animation:slideUp .45s cubic-bezier(.22,1,.36,1) forwards}
+
+    /* End card */
+    #end-card{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:400;background:rgba(0,0,0,.5);backdrop-filter:blur(4px)}
+    #end-card.show{display:flex}
+    .end-inner{background:rgba(10,6,2,.96);border:1.5px solid rgba(255,215,0,.4);border-radius:24px;padding:36px 40px;text-align:center;max-width:min(340px,calc(100vw - 40px));box-shadow:0 0 80px rgba(255,140,0,.22),0 20px 60px rgba(0,0,0,.7);pointer-events:all}
+    .end-emoji{font-size:46px;margin-bottom:12px}
+    .end-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;color:rgba(255,215,0,.6);margin-bottom:10px}
+    .end-quote{font-family:'Cinzel',serif;font-size:19px;color:#FFD700;line-height:1.55;font-style:italic;margin-bottom:6px}
+    .end-attr{font-size:11px;color:rgba(255,215,0,.4);letter-spacing:1px;margin-bottom:24px}
+    .restart-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#FFD700,#FF8C00);color:#1a0500;font-family:'Cinzel',serif;font-size:12px;font-weight:700;letter-spacing:2px;border:none;border-radius:50px;padding:13px 28px;cursor:pointer;transition:all .25s;box-shadow:0 4px 20px rgba(255,140,0,.4)}
+    .restart-btn:hover{transform:scale(1.05);box-shadow:0 6px 28px rgba(255,140,0,.6)}
+  </style>
+</head>
+<body>
+
+<!-- Scene transition flash -->
+<div id="transition"></div>
+
+<!-- Marker prompt -->
+<div id="marker-prompt">
+  <div class="p-icon">📷</div>
+  <div class="p-text">Point at the Hiro marker to begin</div>
+</div>
+
+<!-- End card -->
+<div id="end-card">
+  <div class="end-inner">
+    <div class="end-emoji">🐰🦁</div>
+    <div class="end-label">The Moral</div>
+    <div class="end-quote">"Pride blinds<br>even the mightiest."</div>
+    <div class="end-attr">— Panchatantra Folk Tale</div>
+    <button class="restart-btn" id="restart-btn">↺ &nbsp;Retell the Story</button>
+  </div>
+</div>
+
+<!-- Main UI -->
+<div id="ui">
+  <div id="header">
+    <div id="title-pill">🦁 &nbsp;The Cunning Hare &amp; The Lion</div>
+    <div id="dots">
+      <div class="dot active" data-i="0"></div>
+      <div class="dot" data-i="1"></div>
+      <div class="dot" data-i="2"></div>
+      <div class="dot" data-i="3"></div>
+      <div class="dot" data-i="4"></div>
+    </div>
+  </div>
+  <div id="panel" role="button" tabindex="0" aria-label="Story panel — tap to advance">
+    <div class="s-badge" id="p-badge">Scene 1 of 5</div>
+    <div class="s-title" id="p-title">The Proud Lion</div>
+    <div class="s-body"  id="p-body">In a vast forest, a mighty lion ruled through fear alone. Each dawn, he gazed into the river — not to drink, but to admire himself. No creature dared challenge his pride.</div>
+    <div class="tap-cue" id="tap-cue"><div class="tap-dot"></div>Tap to continue</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     AR SCENE — A-Frame + AR.js
+     All 3D built from A-Frame geometric primitives.
+     Scenes are toggled via visible="true/false".
+     Marker: Hiro (built-in AR.js preset)
+════════════════════════════════════════════════ -->
+<a-scene
+  embedded
+  arjs="sourceType: webcam; debugUIEnabled: false;"
+  vr-mode-ui="enabled: false"
+  renderer="logarithmicDepthBuffer: true; precision: medium; antialias: true;"
+  loading-screen="enabled: false">
+
+  <a-marker preset="hiro" id="hiro-marker" emitevents="true">
+
+    <!-- ── Ground: river + grassy banks (always visible) ── -->
+    <a-plane color="#1565C0" opacity="0.5" position="0 0.005 0" rotation="-90 0 0" width="5" height="3"></a-plane>
+    <a-plane color="#2E7D32" opacity="0.6" position="-2 0.01 0"  rotation="-90 0 0" width="2" height="3"></a-plane>
+    <a-plane color="#2E7D32" opacity="0.6" position=" 2 0.01 0"  rotation="-90 0 0" width="2" height="3"></a-plane>
+
+    <!-- ══════════════════════════════════════
+         SCENE 1 — THE PROUD LION
+         Lion rotates slowly at the riverbank.
+    ══════════════════════════════════════ -->
+    <a-entity id="s1" visible="true">
+      <!-- Lion body (golden amber) — slow yaw -->
+      <a-cylinder color="#C8820C" position="0 0.55 0" radius="0.28" height="0.75"
+        animation="property: rotation; from: 0 -25 0; to: 0 25 0; loop: true; dir: alternate; dur: 2200; easing: easeInOutSine">
+      </a-cylinder>
+      <!-- Mane (dark brown halo behind head) -->
+      <a-sphere color="#7B3F00" position="0 1.1 0" radius="0.38"></a-sphere>
+      <!-- Head -->
+      <a-sphere color="#D4900F" position="0 1.12 0" radius="0.27"></a-sphere>
+      <!-- Snout -->
+      <a-box color="#C07010" position="0 1.06 0.24" width="0.17" height="0.11" depth="0.09"></a-box>
+      <a-sphere color="#D27090" position="0 1.10 0.31" radius="0.04"></a-sphere>
+      <!-- Eyes -->
+      <a-sphere color="#120800" position="-0.1 1.17 0.22" radius="0.045"></a-sphere>
+      <a-sphere color="#120800" position=" 0.1 1.17 0.22" radius="0.045"></a-sphere>
+      <!-- Pupils (golden) -->
+      <a-sphere color="#FFD700" position="-0.1 1.17 0.245" radius="0.02"></a-sphere>
+      <a-sphere color="#FFD700" position=" 0.1 1.17 0.245" radius="0.02"></a-sphere>
+      <!-- Tail -->
+      <a-cylinder color="#C8820C" position="0.28 0.38 -0.15" rotation="0 0 45" radius="0.04" height="0.5"></a-cylinder>
+      <a-sphere color="#7B3F00" position="0.52 0.62 -0.15" radius="0.07"></a-sphere>
+      <!-- Front paws -->
+      <a-cylinder color="#D4900F" position="-0.2 0.15 0.2" rotation="15 0 0" radius="0.07" height="0.3"></a-cylinder>
+      <a-cylinder color="#D4900F" position=" 0.2 0.15 0.2" rotation="15 0 0" radius="0.07" height="0.3"></a-cylinder>
+    </a-entity>
+
+    <!-- ══════════════════════════════════════
+         SCENE 2 — THE CUNNING HARE APPEARS
+         Hare hops in from the side.
+    ══════════════════════════════════════ -->
+    <a-entity id="s2" visible="false">
+      <!-- Reuse lion (static) -->
+      <a-cylinder color="#C8820C" position="0.5 0.55 0" radius="0.25" height="0.7"></a-cylinder>
+      <a-sphere color="#7B3F00" position="0.5 1.08 0" radius="0.35"></a-sphere>
+      <a-sphere color="#D4900F" position="0.5 1.1 0" radius="0.25"></a-sphere>
+      <a-sphere color="#120800" position="0.4 1.16 0.22" radius="0.04"></a-sphere>
+      <a-sphere color="#120800" position="0.6 1.16 0.22" radius="0.04"></a-sphere>
+
+      <!-- Hare — grey, with bobbing animation -->
+      <a-entity position="-0.6 0 0"
+        animation="property: position; from: -0.6 0 0; to: -0.55 0 0; loop: true; dir: alternate; dur: 600; easing: easeInOutQuad">
+        <!-- Body -->
+        <a-cylinder color="#BDBDBD" position="0 0.38 0" radius="0.16" height="0.5"
+          animation="property: position; from: 0 0.38 0; to: 0 0.43 0; loop: true; dir: alternate; dur: 600; easing: easeInOutQuad">
+        </a-cylinder>
+        <!-- Head -->
+        <a-sphere color="#D0D0D0" position="0 0.73 0" radius="0.17"></a-sphere>
+        <!-- Left ear -->
+        <a-cylinder color="#C8C8C8" position="-0.06 0.98 0" radius="0.035" height="0.33" rotation="0 0 -8"></a-cylinder>
+        <!-- Right ear -->
+        <a-cylinder color="#C8C8C8" position=" 0.06 0.98 0" radius="0.035" height="0.33" rotation="0 0  8"></a-cylinder>
+        <!-- Inner ears (pink) -->
+        <a-cylinder color="#F48FB1" position="-0.06 0.98 0.01" radius="0.018" height="0.26" rotation="0 0 -8"></a-cylinder>
+        <a-cylinder color="#F48FB1" position=" 0.06 0.98 0.01" radius="0.018" height="0.26" rotation="0 0  8"></a-cylinder>
+        <!-- Eyes (red — rabbit) -->
+        <a-sphere color="#E53935" position="-0.07 0.75 0.14" radius="0.03"></a-sphere>
+        <a-sphere color="#E53935" position=" 0.07 0.75 0.14" radius="0.03"></a-sphere>
+        <!-- Nose -->
+        <a-sphere color="#F8BBD9" position="0 0.7 0.16" radius="0.022"></a-sphere>
+        <!-- Fluffy tail -->
+        <a-sphere color="#FAFAFA" position="0 0.35 -0.18" radius="0.09"></a-sphere>
+      </a-entity>
+    </a-entity>
+
+    <!-- ══════════════════════════════════════
+         SCENE 3 — FOLLOW ME TO THE WELL
+         Lion + Hare face the well.
+    ══════════════════════════════════════ -->
+    <a-entity id="s3" visible="false">
+      <!-- Lion (left) -->
+      <a-entity position="-0.55 0 0">
+        <a-cylinder color="#C8820C" position="0 0.55 0" radius="0.25" height="0.7"></a-cylinder>
+        <a-sphere color="#7B3F00" position="0 1.08 0" radius="0.34"></a-sphere>
+        <a-sphere color="#D4900F" position="0 1.1 0" radius="0.24"></a-sphere>
+        <a-sphere color="#120800" position="-0.09 1.15 0.21" radius="0.04"></a-sphere>
+        <a-sphere color="#120800" position=" 0.09 1.15 0.21" radius="0.04"></a-sphere>
+      </a-entity>
+      <!-- Hare (right, bouncing) -->
+      <a-entity position="0.55 0 0"
+        animation="property: position; from: 0.55 0 0; to: 0.55 0.06 0; loop: true; dir: alternate; dur: 500; easing: easeInOutQuad">
+        <a-cylinder color="#BDBDBD" position="0 0.38 0" radius="0.14" height="0.45"></a-cylinder>
+        <a-sphere color="#D0D0D0" position="0 0.7 0" radius="0.16"></a-sphere>
+        <a-cylinder color="#C8C8C8" position="-0.055 0.94 0" radius="0.03" height="0.3" rotation="0 0 -8"></a-cylinder>
+        <a-cylinder color="#C8C8C8" position=" 0.055 0.94 0" radius="0.03" height="0.3" rotation="0 0  8"></a-cylinder>
+      </a-entity>
+      <!-- Well in the distance -->
+      <a-entity position="0 0 -1.2">
+        <a-cylinder color="#795548" position="0 0.25 0" radius="0.28" height="0.5" open-ended="true" side="double"></a-cylinder>
+        <a-torus color="#616161" position="0 0.5 0" radius="0.3" radius-tubular="0.05"></a-torus>
+        <a-circle color="#1565C0" position="0 0.01 0" radius="0.2" rotation="-90 0 0" opacity="0.8"></a-circle>
+      </a-entity>
+    </a-entity>
+
+    <!-- ══════════════════════════════════════
+         SCENE 4 — REFLECTION IN THE WELL
+         Lion leans over well and sees himself.
+    ══════════════════════════════════════ -->
+    <a-entity id="s4" visible="false">
+      <!-- Well (centered, larger) -->
+      <a-entity position="0.5 0 0">
+        <a-cylinder color="#795548" position="0 0.28 0" radius="0.32" height="0.55" open-ended="true" side="double"></a-cylinder>
+        <a-torus color="#616161" position="0 0.56 0" radius="0.34" radius-tubular="0.06"></a-torus>
+        <!-- Water surface with shimmer -->
+        <a-circle color="#1A237E" position="0 0.01 0" radius="0.25" rotation="-90 0 0" opacity="0.9"></a-circle>
+        <!-- Lion REFLECTION (small, inverted, dim — inside the well) -->
+        <a-sphere color="#C8820C" position="0 0.03 0" radius="0.14" opacity="0.55"
+          animation="property: scale; from: 1 1 1; to: 1.08 1.08 1.08; loop: true; dir: alternate; dur: 900; easing: easeInOutSine">
+        </a-sphere>
+      </a-entity>
+      <!-- Lion leaning over the well -->
+      <a-entity position="-0.4 0 0">
+        <a-cylinder color="#C8820C" position="0 0.52 0" radius="0.26" height="0.7"
+          animation="property: rotation; from: -10 0 0; to: 10 0 0; loop: true; dir: alternate; dur: 1000; easing: easeInOutSine">
+        </a-cylinder>
+        <a-sphere color="#7B3F00" position="0 1.05 0.15" radius="0.33"></a-sphere>
+        <a-sphere color="#D4900F" position="0 1.07 0.17" radius="0.23"></a-sphere>
+        <a-sphere color="#120800" position="-0.09 1.12 0.36" radius="0.04"></a-sphere>
+        <a-sphere color="#120800" position=" 0.09 1.12 0.36" radius="0.04"></a-sphere>
+      </a-entity>
+      <!-- Hare watching from the side, smug bob -->
+      <a-entity position="-1.1 0 0"
+        animation="property: rotation; from: 0 20 0; to: 0 -20 0; loop: true; dir: alternate; dur: 1500; easing: easeInOutSine">
+        <a-cylinder color="#BDBDBD" position="0 0.38 0" radius="0.13" height="0.42"></a-cylinder>
+        <a-sphere color="#D0D0D0" position="0 0.68 0" radius="0.15"></a-sphere>
+        <a-cylinder color="#C8C8C8" position="-0.05 0.9 0" radius="0.03" height="0.28" rotation="0 0 -8"></a-cylinder>
+        <a-cylinder color="#C8C8C8" position=" 0.05 0.9 0" radius="0.03" height="0.28" rotation="0 0  8"></a-cylinder>
+      </a-entity>
+    </a-entity>
+
+    <!-- ══════════════════════════════════════
+         SCENE 5 — THE MORAL
+         Both characters bow. Golden glow.
+    ══════════════════════════════════════ -->
+    <a-entity id="s5" visible="false">
+      <!-- Ambient glow plane -->
+      <a-plane color="#FFD700" opacity="0.08" position="0 0.01 0" rotation="-90 0 0" width="4" height="3"></a-plane>
+
+      <!-- Lion bowing left -->
+      <a-entity position="-0.6 0 0"
+        animation="property: rotation; from: 0 0 0; to: -25 0 0; loop: true; dir: alternate; dur: 1800; easing: easeInOutSine">
+        <a-cylinder color="#C8820C" position="0 0.5 0" radius="0.26" height="0.72"></a-cylinder>
+        <a-sphere color="#7B3F00" position="0 1.05 0" radius="0.36"></a-sphere>
+        <a-sphere color="#D4900F" position="0 1.07 0" radius="0.25"></a-sphere>
+        <a-sphere color="#120800" position="-0.09 1.13 0.21" radius="0.04"></a-sphere>
+        <a-sphere color="#120800" position=" 0.09 1.13 0.21" radius="0.04"></a-sphere>
+      </a-entity>
+
+      <!-- Hare bowing right -->
+      <a-entity position="0.6 0 0"
+        animation="property: rotation; from: 0 0 0; to: -35 0 0; loop: true; dir: alternate; dur: 1400; easing: easeInOutSine">
+        <a-cylinder color="#BDBDBD" position="0 0.38 0" radius="0.14" height="0.46"></a-cylinder>
+        <a-sphere color="#D0D0D0" position="0 0.7 0" radius="0.16"></a-sphere>
+        <a-cylinder color="#C8C8C8" position="-0.055 0.93 0" radius="0.03" height="0.3" rotation="0 0 -8"></a-cylinder>
+        <a-cylinder color="#C8C8C8" position=" 0.055 0.93 0" radius="0.03" height="0.3" rotation="0 0  8"></a-cylinder>
+        <a-sphere color="#FAFAFA" position="0 0.34 -0.17" radius="0.09"></a-sphere>
+      </a-entity>
+
+      <!-- Floating sparkles -->
+      <a-sphere color="#FFD700" position="-0.3 1.5 0" radius="0.04" opacity="0.8"
+        animation="property: position; from: -0.3 1.5 0; to: 0.1 1.8 0; loop: true; dir: alternate; dur: 2000; easing: easeInOutSine">
+      </a-sphere>
+      <a-sphere color="#FFD700" position="0.4 1.6 0.1" radius="0.03" opacity="0.7"
+        animation="property: position; from: 0.4 1.6 0.1; to: -0.1 1.9 0.1; loop: true; dir: alternate; dur: 2500; easing: easeInOutSine">
+      </a-sphere>
+      <a-sphere color="#FFF176" position="0 1.7 -0.1" radius="0.035" opacity="0.6"
+        animation="property: position; from: 0 1.7 -0.1; to: 0.2 2.0 -0.1; loop: true; dir: alternate; dur: 1800; easing: easeInOutSine">
+      </a-sphere>
+    </a-entity>
+
+  </a-marker>
+
+  <a-entity camera></a-entity>
+</a-scene>
+
+
+<script>
+// ─────────────────────────────────────────────
+// SCENE DATA
+// ─────────────────────────────────────────────
+const SCENES = [
+  {
+    badge: 'Scene 1 of 5',
+    title: 'The Proud Lion',
+    body: 'In a vast forest, a mighty lion ruled through fear alone. Each dawn, he gazed into the river — not to drink, but to admire himself. He believed no creature in the world could match his power.',
+    show: ['s1'], hide: ['s2','s3','s4','s5']
+  },
+  {
+    badge: 'Scene 2 of 5',
+    title: 'The Cunning Hare Appears',
+    body: '"Your Majesty," said a small hare boldly, "there is another lion who claims to be the true king of this forest — greater than you!" The lion\'s eyes blazed with fury.',
+    show: ['s2'], hide: ['s1','s3','s4','s5']
+  },
+  {
+    badge: 'Scene 3 of 5',
+    title: 'Follow Me, O King',
+    body: '"Take me to him at once!" roared the lion. "Follow me, Your Majesty," smiled the cunning hare, leading him deep into the forest — toward an old stone well that had stood there for centuries.',
+    show: ['s3'], hide: ['s1','s2','s4','s5']
+  },
+  {
+    badge: 'Scene 4 of 5',
+    title: 'The Reflection in the Well',
+    body: '"Peer inside, Your Majesty — your rival hides within." The lion looked down and roared. A lion stared back and roared too. He leapt in to attack... only to find he had been conquered by his own reflection.',
+    show: ['s4'], hide: ['s1','s2','s3','s5']
+  },
+  {
+    badge: 'Scene 5 of 5',
+    title: 'Wisdom Triumphs',
+    body: 'Humbled and dripping wet, the lion crawled from the well. The hare bowed gracefully and hopped away, free forever. For wisdom and cunning will always triumph over blind pride.',
+    show: ['s5'], hide: ['s1','s2','s3','s4'],
+    isLast: true
+  }
+];
+
+let current = 0;
+let busy = false;
+
+// ─── Marker detection ───
+const marker = document.getElementById('hiro-marker');
+const prompt = document.getElementById('marker-prompt');
+marker.addEventListener('markerFound', () => {
+  prompt.classList.add('gone');
+  setTimeout(() => { prompt.style.display = 'none'; }, 600);
+});
+marker.addEventListener('markerLost', () => {
+  prompt.style.display = 'flex';
+  setTimeout(() => prompt.classList.remove('gone'), 30);
+});
+
+// ─── Show a scene ───
+function showScene(idx) {
+  const sc = SCENES[idx];
+
+  // Toggle AR visibility
+  sc.show.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('visible', 'true');
+  });
+  sc.hide.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('visible', 'false');
+  });
+
+  // Update dots
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.className = 'dot';
+    if (i < idx) d.classList.add('done');
+    else if (i === idx) d.classList.add('active');
+  });
+
+  // Update panel text
+  document.getElementById('p-badge').textContent = sc.badge;
+  document.getElementById('p-title').textContent = sc.title;
+  document.getElementById('p-body').textContent  = sc.body;
+
+  // Animate panel
+  const panel = document.getElementById('panel');
+  panel.classList.remove('anim-in');
+  void panel.offsetWidth;
+  panel.classList.add('anim-in');
+
+  // Tap cue / end card
+  document.getElementById('tap-cue').style.display = sc.isLast ? 'none' : 'flex';
+  if (sc.isLast) {
+    setTimeout(() => document.getElementById('end-card').classList.add('show'), 900);
+  }
+}
+
+// ─── Advance scene ───
+function advance() {
+  if (busy || current >= SCENES.length - 1) return;
+  busy = true;
+
+  const t = document.getElementById('transition');
+  t.classList.add('on');
+
+  setTimeout(() => {
+    current++;
+    showScene(current);
+    t.classList.remove('on');
+    busy = false;
+  }, 350);
+}
+
+// ─── Restart ───
+function restart() {
+  document.getElementById('end-card').classList.remove('show');
+  document.getElementById('tap-cue').style.display = 'flex';
+  current = 0;
+  showScene(0);
+}
+
+// ─── Event listeners ───
+document.getElementById('panel').addEventListener('click', advance);
+document.getElementById('panel').addEventListener('touchstart', e => { e.preventDefault(); advance(); }, { passive: false });
+document.getElementById('restart-btn').addEventListener('click', restart);
+
+// Init
+showScene(0);
+</script>
+</body>
+</html>
