@@ -132,14 +132,19 @@
          Lion rotates slowly at the riverbank.
     ══════════════════════════════════════ -->
     <a-entity id="s1" visible="true">
-      <!-- Lion body (golden amber) — slow yaw -->
+      <!-- Lion body: yaw survey + chest breathing -->
       <a-cylinder color="#C8820C" position="0 0.55 0" radius="0.28" height="0.75"
-        animation="property: rotation; from: 0 -25 0; to: 0 25 0; loop: true; dir: alternate; dur: 2200; easing: easeInOutSine">
+        animation="property: rotation; from: 0 -25 0; to: 0 25 0; loop: true; dir: alternate; dur: 2200; easing: easeInOutSine"
+        animation__breathe="property: scale; from: 1 1 1; to: 1.07 1.03 1.07; loop: true; dir: alternate; dur: 1800; easing: easeInOutSine">
       </a-cylinder>
-      <!-- Mane (dark brown halo behind head) -->
-      <a-sphere color="#7B3F00" position="0 1.1 0" radius="0.38"></a-sphere>
-      <!-- Head -->
-      <a-sphere color="#D4900F" position="0 1.12 0" radius="0.27"></a-sphere>
+      <!-- Mane: slow proud pulse -->
+      <a-sphere color="#7B3F00" position="0 1.1 0" radius="0.38"
+        animation="property: scale; from: 1 1 1; to: 1.06 1.06 1.06; loop: true; dir: alternate; dur: 2500; easing: easeInOutSine">
+      </a-sphere>
+      <!-- Head: gentle proud nod -->
+      <a-sphere color="#D4900F" position="0 1.12 0" radius="0.27"
+        animation="property: rotation; from: -4 0 0; to: 4 0 0; loop: true; dir: alternate; dur: 3000; easing: easeInOutSine">
+      </a-sphere>
       <!-- Snout -->
       <a-box color="#C07010" position="0 1.06 0.24" width="0.17" height="0.11" depth="0.09"></a-box>
       <a-sphere color="#D27090" position="0 1.10 0.31" radius="0.04"></a-sphere>
@@ -149,8 +154,10 @@
       <!-- Pupils (golden) -->
       <a-sphere color="#FFD700" position="-0.1 1.17 0.245" radius="0.02"></a-sphere>
       <a-sphere color="#FFD700" position=" 0.1 1.17 0.245" radius="0.02"></a-sphere>
-      <!-- Tail -->
-      <a-cylinder color="#C8820C" position="0.28 0.38 -0.15" rotation="0 0 45" radius="0.04" height="0.5"></a-cylinder>
+      <!-- Tail: wagging -->
+      <a-cylinder color="#C8820C" position="0.28 0.38 -0.15" radius="0.04" height="0.5"
+        animation="property: rotation; from: 0 0 35; to: 0 0 60; loop: true; dir: alternate; dur: 700; easing: easeInOutSine">
+      </a-cylinder>
       <a-sphere color="#7B3F00" position="0.52 0.62 -0.15" radius="0.07"></a-sphere>
       <!-- Front paws -->
       <a-cylinder color="#D4900F" position="-0.2 0.15 0.2" rotation="15 0 0" radius="0.07" height="0.3"></a-cylinder>
@@ -169,19 +176,22 @@
       <a-sphere color="#120800" position="0.4 1.16 0.22" radius="0.04"></a-sphere>
       <a-sphere color="#120800" position="0.6 1.16 0.22" radius="0.04"></a-sphere>
 
-      <!-- Hare — grey, with bobbing animation -->
+      <!-- Hare — realistic bounce hop (easeOutBounce) -->
       <a-entity position="-0.6 0 0"
-        animation="property: position; from: -0.6 0 0; to: -0.55 0 0; loop: true; dir: alternate; dur: 600; easing: easeInOutQuad">
+        animation="property: position; from: -0.6 0 0; to: -0.55 0.12 0; loop: true; dir: alternate; dur: 500; easing: easeOutBounce"
+        animation__tilt="property: rotation; from: 0 0 0; to: -12 0 0; loop: true; dir: alternate; dur: 500; easing: easeInOutQuad">
         <!-- Body -->
-        <a-cylinder color="#BDBDBD" position="0 0.38 0" radius="0.16" height="0.5"
-          animation="property: position; from: 0 0.38 0; to: 0 0.43 0; loop: true; dir: alternate; dur: 600; easing: easeInOutQuad">
-        </a-cylinder>
+        <a-cylinder color="#BDBDBD" position="0 0.38 0" radius="0.16" height="0.5"></a-cylinder>
         <!-- Head -->
         <a-sphere color="#D0D0D0" position="0 0.73 0" radius="0.17"></a-sphere>
-        <!-- Left ear -->
-        <a-cylinder color="#C8C8C8" position="-0.06 0.98 0" radius="0.035" height="0.33" rotation="0 0 -8"></a-cylinder>
-        <!-- Right ear -->
-        <a-cylinder color="#C8C8C8" position=" 0.06 0.98 0" radius="0.035" height="0.33" rotation="0 0  8"></a-cylinder>
+        <!-- Left ear: twitching -->
+        <a-cylinder color="#C8C8C8" position="-0.06 0.98 0" radius="0.035" height="0.33"
+          animation="property: rotation; from: 0 0 -8; to: -10 0 -18; loop: true; dir: alternate; dur: 400; easing: easeInOutSine">
+        </a-cylinder>
+        <!-- Right ear: twitching offset -->
+        <a-cylinder color="#C8C8C8" position=" 0.06 0.98 0" radius="0.035" height="0.33"
+          animation="property: rotation; from: 0 0 8; to: 10 0 18; loop: true; dir: alternate; dur: 550; easing: easeInOutSine">
+        </a-cylinder>
         <!-- Inner ears (pink) -->
         <a-cylinder color="#F48FB1" position="-0.06 0.98 0.01" radius="0.018" height="0.26" rotation="0 0 -8"></a-cylinder>
         <a-cylinder color="#F48FB1" position=" 0.06 0.98 0.01" radius="0.018" height="0.26" rotation="0 0  8"></a-cylinder>
@@ -190,8 +200,10 @@
         <a-sphere color="#E53935" position=" 0.07 0.75 0.14" radius="0.03"></a-sphere>
         <!-- Nose -->
         <a-sphere color="#F8BBD9" position="0 0.7 0.16" radius="0.022"></a-sphere>
-        <!-- Fluffy tail -->
-        <a-sphere color="#FAFAFA" position="0 0.35 -0.18" radius="0.09"></a-sphere>
+        <!-- Fluffy tail: wiggle -->
+        <a-sphere color="#FAFAFA" position="0 0.35 -0.18" radius="0.09"
+          animation="property: position; from: 0 0.35 -0.18; to: 0.05 0.38 -0.18; loop: true; dir: alternate; dur: 300; easing: easeInOutSine">
+        </a-sphere>
       </a-entity>
     </a-entity>
 
@@ -208,13 +220,18 @@
         <a-sphere color="#120800" position="-0.09 1.15 0.21" radius="0.04"></a-sphere>
         <a-sphere color="#120800" position=" 0.09 1.15 0.21" radius="0.04"></a-sphere>
       </a-entity>
-      <!-- Hare (right, bouncing) -->
+      <!-- Hare (right, energetic bounce + excited ear twitch) -->
       <a-entity position="0.55 0 0"
-        animation="property: position; from: 0.55 0 0; to: 0.55 0.06 0; loop: true; dir: alternate; dur: 500; easing: easeInOutQuad">
+        animation="property: position; from: 0.55 0 0; to: 0.55 0.1 0; loop: true; dir: alternate; dur: 450; easing: easeOutBounce"
+        animation__tilt="property: rotation; from: 0 0 0; to: -10 0 0; loop: true; dir: alternate; dur: 450; easing: easeInOutQuad">
         <a-cylinder color="#BDBDBD" position="0 0.38 0" radius="0.14" height="0.45"></a-cylinder>
         <a-sphere color="#D0D0D0" position="0 0.7 0" radius="0.16"></a-sphere>
-        <a-cylinder color="#C8C8C8" position="-0.055 0.94 0" radius="0.03" height="0.3" rotation="0 0 -8"></a-cylinder>
-        <a-cylinder color="#C8C8C8" position=" 0.055 0.94 0" radius="0.03" height="0.3" rotation="0 0  8"></a-cylinder>
+        <a-cylinder color="#C8C8C8" position="-0.055 0.94 0" radius="0.03" height="0.3"
+          animation="property: rotation; from: 0 0 -8; to: -12 0 -20; loop: true; dir: alternate; dur: 380; easing: easeInOutSine">
+        </a-cylinder>
+        <a-cylinder color="#C8C8C8" position=" 0.055 0.94 0" radius="0.03" height="0.3"
+          animation="property: rotation; from: 0 0 8; to: 12 0 20; loop: true; dir: alternate; dur: 500; easing: easeInOutSine">
+        </a-cylinder>
       </a-entity>
       <!-- Well in the distance -->
       <a-entity position="0 0 -1.2">
@@ -233,30 +250,48 @@
       <a-entity position="0.5 0 0">
         <a-cylinder color="#795548" position="0 0.28 0" radius="0.32" height="0.55" open-ended="true" side="double"></a-cylinder>
         <a-torus color="#616161" position="0 0.56 0" radius="0.34" radius-tubular="0.06"></a-torus>
-        <!-- Water surface with shimmer -->
-        <a-circle color="#1A237E" position="0 0.01 0" radius="0.25" rotation="-90 0 0" opacity="0.9"></a-circle>
-        <!-- Lion REFLECTION (small, inverted, dim — inside the well) -->
-        <a-sphere color="#C8820C" position="0 0.03 0" radius="0.14" opacity="0.55"
-          animation="property: scale; from: 1 1 1; to: 1.08 1.08 1.08; loop: true; dir: alternate; dur: 900; easing: easeInOutSine">
+        <!-- Water: shimmering opacity -->
+        <a-circle color="#1A237E" position="0 0.01 0" radius="0.25" rotation="-90 0 0"
+          animation="property: opacity; from: 0.6; to: 1; loop: true; dir: alternate; dur: 900; easing: easeInOutSine">
+        </a-circle>
+        <!-- Water ripple ring -->
+        <a-torus color="#5C9BD6" position="0 0.02 0" radius="0.1" radius-tubular="0.01" rotation="-90 0 0"
+          animation="property: radius; from: 0.05; to: 0.22; loop: true; dur: 1200; easing: easeOutSine"
+          animation__fade="property: opacity; from: 0.8; to: 0; loop: true; dur: 1200; easing: easeOutSine">
+        </a-torus>
+        <!-- Reflection: pulse + color shift -->
+        <a-sphere color="#C8820C" position="0 0.03 0" radius="0.14" opacity="0.6"
+          animation="property: scale; from: 1 1 1; to: 1.15 1.15 1.15; loop: true; dir: alternate; dur: 700; easing: easeInOutSine"
+          animation__glow="property: opacity; from: 0.4; to: 0.8; loop: true; dir: alternate; dur: 700; easing: easeInOutSine">
         </a-sphere>
       </a-entity>
-      <!-- Lion leaning over the well -->
+      <!-- Lion: dramatic deep lean over the well -->
       <a-entity position="-0.4 0 0">
         <a-cylinder color="#C8820C" position="0 0.52 0" radius="0.26" height="0.7"
-          animation="property: rotation; from: -10 0 0; to: 10 0 0; loop: true; dir: alternate; dur: 1000; easing: easeInOutSine">
+          animation="property: rotation; from: -5 0 0; to: 32 0 0; loop: true; dir: alternate; dur: 1200; easing: easeInOutCubic"
+          animation__breathe="property: scale; from: 1 1 1; to: 1.05 1.02 1.05; loop: true; dir: alternate; dur: 1500; easing: easeInOutSine">
         </a-cylinder>
+        <!-- Mane -->
         <a-sphere color="#7B3F00" position="0 1.05 0.15" radius="0.33"></a-sphere>
-        <a-sphere color="#D4900F" position="0 1.07 0.17" radius="0.23"></a-sphere>
+        <!-- Head: aggressive shake while peering in -->
+        <a-sphere color="#D4900F" position="0 1.07 0.17" radius="0.23"
+          animation="property: rotation; from: 0 -12 0; to: 0 12 0; loop: true; dir: alternate; dur: 280; easing: easeInOutSine">
+        </a-sphere>
         <a-sphere color="#120800" position="-0.09 1.12 0.36" radius="0.04"></a-sphere>
         <a-sphere color="#120800" position=" 0.09 1.12 0.36" radius="0.04"></a-sphere>
       </a-entity>
-      <!-- Hare watching from the side, smug bob -->
+      <!-- Hare: watching smugly, excited little hop -->
       <a-entity position="-1.1 0 0"
-        animation="property: rotation; from: 0 20 0; to: 0 -20 0; loop: true; dir: alternate; dur: 1500; easing: easeInOutSine">
+        animation="property: rotation; from: 0 25 0; to: 0 -10 0; loop: true; dir: alternate; dur: 1200; easing: easeInOutSine"
+        animation__hop="property: position; from: -1.1 0 0; to: -1.1 0.08 0; loop: true; dir: alternate; dur: 600; easing: easeOutBounce">
         <a-cylinder color="#BDBDBD" position="0 0.38 0" radius="0.13" height="0.42"></a-cylinder>
         <a-sphere color="#D0D0D0" position="0 0.68 0" radius="0.15"></a-sphere>
-        <a-cylinder color="#C8C8C8" position="-0.05 0.9 0" radius="0.03" height="0.28" rotation="0 0 -8"></a-cylinder>
-        <a-cylinder color="#C8C8C8" position=" 0.05 0.9 0" radius="0.03" height="0.28" rotation="0 0  8"></a-cylinder>
+        <a-cylinder color="#C8C8C8" position="-0.05 0.9 0" radius="0.03" height="0.28"
+          animation="property: rotation; from: 0 0 -8; to: -15 0 -20; loop: true; dir: alternate; dur: 350; easing: easeInOutSine">
+        </a-cylinder>
+        <a-cylinder color="#C8C8C8" position=" 0.05 0.9 0" radius="0.03" height="0.28"
+          animation="property: rotation; from: 0 0 8; to: 15 0 20; loop: true; dir: alternate; dur: 450; easing: easeInOutSine">
+        </a-cylinder>
       </a-entity>
     </a-entity>
 
@@ -265,38 +300,54 @@
          Both characters bow. Golden glow.
     ══════════════════════════════════════ -->
     <a-entity id="s5" visible="false">
-      <!-- Ambient glow plane -->
-      <a-plane color="#FFD700" opacity="0.08" position="0 0.01 0" rotation="-90 0 0" width="4" height="3"></a-plane>
+      <!-- Ambient glow plane: pulsing -->
+      <a-plane color="#FFD700" position="0 0.01 0" rotation="-90 0 0" width="4" height="3"
+        animation="property: opacity; from: 0.04; to: 0.14; loop: true; dir: alternate; dur: 1500; easing: easeInOutSine">
+      </a-plane>
 
-      <!-- Lion bowing left -->
+      <!-- Lion: deep humble bow -->
       <a-entity position="-0.6 0 0"
-        animation="property: rotation; from: 0 0 0; to: -25 0 0; loop: true; dir: alternate; dur: 1800; easing: easeInOutSine">
-        <a-cylinder color="#C8820C" position="0 0.5 0" radius="0.26" height="0.72"></a-cylinder>
+        animation="property: rotation; from: 0 0 0; to: -35 0 0; loop: true; dir: alternate; dur: 2000; easing: easeInOutCubic">
+        <a-cylinder color="#C8820C" position="0 0.5 0" radius="0.26" height="0.72"
+          animation="property: scale; from: 1 1 1; to: 1.04 0.97 1.04; loop: true; dir: alternate; dur: 2000; easing: easeInOutSine">
+        </a-cylinder>
         <a-sphere color="#7B3F00" position="0 1.05 0" radius="0.36"></a-sphere>
         <a-sphere color="#D4900F" position="0 1.07 0" radius="0.25"></a-sphere>
         <a-sphere color="#120800" position="-0.09 1.13 0.21" radius="0.04"></a-sphere>
         <a-sphere color="#120800" position=" 0.09 1.13 0.21" radius="0.04"></a-sphere>
       </a-entity>
 
-      <!-- Hare bowing right -->
+      <!-- Hare: victory spin + celebratory hop -->
       <a-entity position="0.6 0 0"
-        animation="property: rotation; from: 0 0 0; to: -35 0 0; loop: true; dir: alternate; dur: 1400; easing: easeInOutSine">
+        animation="property: rotation; from: 0 0 0; to: 0 360 0; loop: true; dur: 2200; easing: easeInOutSine"
+        animation__hop="property: position; from: 0.6 0 0; to: 0.6 0.15 0; loop: true; dir: alternate; dur: 550; easing: easeOutBounce">
         <a-cylinder color="#BDBDBD" position="0 0.38 0" radius="0.14" height="0.46"></a-cylinder>
         <a-sphere color="#D0D0D0" position="0 0.7 0" radius="0.16"></a-sphere>
-        <a-cylinder color="#C8C8C8" position="-0.055 0.93 0" radius="0.03" height="0.3" rotation="0 0 -8"></a-cylinder>
-        <a-cylinder color="#C8C8C8" position=" 0.055 0.93 0" radius="0.03" height="0.3" rotation="0 0  8"></a-cylinder>
+        <a-cylinder color="#C8C8C8" position="-0.055 0.93 0" radius="0.03" height="0.3"
+          animation="property: rotation; from: 0 0 -8; to: -20 0 -25; loop: true; dir: alternate; dur: 300; easing: easeInOutSine">
+        </a-cylinder>
+        <a-cylinder color="#C8C8C8" position=" 0.055 0.93 0" radius="0.03" height="0.3"
+          animation="property: rotation; from: 0 0 8; to: 20 0 25; loop: true; dir: alternate; dur: 400; easing: easeInOutSine">
+        </a-cylinder>
         <a-sphere color="#FAFAFA" position="0 0.34 -0.17" radius="0.09"></a-sphere>
       </a-entity>
 
-      <!-- Floating sparkles -->
-      <a-sphere color="#FFD700" position="-0.3 1.5 0" radius="0.04" opacity="0.8"
-        animation="property: position; from: -0.3 1.5 0; to: 0.1 1.8 0; loop: true; dir: alternate; dur: 2000; easing: easeInOutSine">
+      <!-- Sparkles: 5 orbiting particles with varied paths -->
+      <a-sphere color="#FFD700" position="-0.35 1.4 0" radius="0.045" opacity="0.9"
+        animation="property: position; from: -0.35 1.4 0; to: 0.15 1.85 0.1; loop: true; dir: alternate; dur: 1800; easing: easeInOutSine"
+        animation__pulse="property: scale; from: 1 1 1; to: 1.4 1.4 1.4; loop: true; dir: alternate; dur: 900">
       </a-sphere>
-      <a-sphere color="#FFD700" position="0.4 1.6 0.1" radius="0.03" opacity="0.7"
-        animation="property: position; from: 0.4 1.6 0.1; to: -0.1 1.9 0.1; loop: true; dir: alternate; dur: 2500; easing: easeInOutSine">
+      <a-sphere color="#FFD700" position="0.4 1.55 0.1" radius="0.035" opacity="0.8"
+        animation="property: position; from: 0.4 1.55 0.1; to: -0.15 1.95 -0.1; loop: true; dir: alternate; dur: 2200; easing: easeInOutSine">
       </a-sphere>
-      <a-sphere color="#FFF176" position="0 1.7 -0.1" radius="0.035" opacity="0.6"
-        animation="property: position; from: 0 1.7 -0.1; to: 0.2 2.0 -0.1; loop: true; dir: alternate; dur: 1800; easing: easeInOutSine">
+      <a-sphere color="#FFF176" position="0.05 1.75 -0.15" radius="0.04" opacity="0.7"
+        animation="property: position; from: 0.05 1.75 -0.15; to: 0.3 2.1 0.1; loop: true; dir: alternate; dur: 1600; easing: easeInOutSine">
+      </a-sphere>
+      <a-sphere color="#FFCC02" position="-0.2 1.6 0.2" radius="0.03" opacity="0.75"
+        animation="property: position; from: -0.2 1.6 0.2; to: 0.25 1.85 -0.15; loop: true; dir: alternate; dur: 2600; easing: easeInOutSine">
+      </a-sphere>
+      <a-sphere color="#FFFDE7" position="0.3 1.45 -0.1" radius="0.025" opacity="0.65"
+        animation="property: position; from: 0.3 1.45 -0.1; to: -0.1 1.9 0.2; loop: true; dir: alternate; dur: 2000; easing: easeInOutSine">
       </a-sphere>
     </a-entity>
 
