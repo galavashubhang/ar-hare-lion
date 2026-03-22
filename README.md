@@ -1,2 +1,2 @@
-Index.html - Implementation of the render
+Index.html - Implementation of the render & 
 writeup.md - Storyline
