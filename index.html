@@ -254,11 +254,11 @@
         <a-circle color="#1A237E" position="0 0.01 0" radius="0.25" rotation="-90 0 0"
           animation="property: opacity; from: 0.6; to: 1; loop: true; dir: alternate; dur: 900; easing: easeInOutSine">
         </a-circle>
-        <!-- Water ripple ring -->
-        <a-torus color="#5C9BD6" position="0 0.02 0" radius="0.1" radius-tubular="0.01" rotation="-90 0 0"
-          animation="property: radius; from: 0.05; to: 0.22; loop: true; dur: 1200; easing: easeOutSine"
-          animation__fade="property: opacity; from: 0.8; to: 0; loop: true; dur: 1200; easing: easeOutSine">
-        </a-torus>
+        <!-- Water ripple: safe scale+fade on a circle -->
+        <a-circle color="#5C9BD6" position="0 0.02 0" radius="0.08" rotation="-90 0 0" opacity="0.7"
+          animation="property: scale; from: 0.3 0.3 0.3; to: 1.5 1.5 1.5; loop: true; dur: 1200; easing: easeOutSine"
+          animation__fade="property: opacity; from: 0.7; to: 0; loop: true; dur: 1200; easing: easeOutSine">
+        </a-circle>
         <!-- Reflection: pulse + color shift -->
         <a-sphere color="#C8820C" position="0 0.03 0" radius="0.14" opacity="0.6"
           animation="property: scale; from: 1 1 1; to: 1.15 1.15 1.15; loop: true; dir: alternate; dur: 700; easing: easeInOutSine"
